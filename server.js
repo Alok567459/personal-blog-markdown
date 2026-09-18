@@ -12,6 +12,12 @@ require('dotenv').config();
 // When we 'require('express')', we are loading the Express framework code from our node_modules folder.
 const express = require('express');
 const mongoose = require('mongoose'); // Import Mongoose
+const cors = require('cors'); // Assuming you'll add/have cors
+
+
+// NEW: Import your route files
+const postRoutes = require('./routes/postRoutes');
+
 
 // 2. Create an instance of an Express application
 // We execute the imported express module as a function to create our app object.
@@ -22,6 +28,17 @@ const app = express();
 // A port is like a numbered door on your computer that programs can use to communicate over a network.
 // We've chosen 5000, a common port for local backend development, to avoid conflicts with other services
 // (like the React development server, which often uses port 3000).
+
+
+// --- MIDDLEWARE ---
+// This is the crucial line. express.json() is a built-in middleware function in Express.
+// It parses incoming requests with JSON payloads and is based on body-parser.
+// When a request comes in with a 'Content-Type: application/json' header, this middleware
+// will parse the JSON data and make it available on the `req.body` property.
+app.use(cors());
+
+app.use(express.json());
+
 
 // MODIFIED: 4. Define the port the server will listen on
 // We now read the port from the process.env object, which was populated by dotenv.
@@ -39,6 +56,13 @@ const PORT = process.env.PORT || 5000
 // app.listen(PORT, () => {
 //   console.log(`Server is alive and running on port ${PORT}`);
 // });
+
+
+// NEW: Mount the routes
+// This tells Express that for any request that starts with '/api/posts',
+// it should be handled by the 'postRoutes' router.
+app.use('/api/posts', postRoutes);
+
 
 
 
