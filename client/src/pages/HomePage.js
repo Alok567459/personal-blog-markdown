@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 // HIGHLIGHT START
-// 1. Import the new component we just created.
+// 1. Import the new component we created.
+// The path '../components/PostListItem' means "go up one level from 'pages' to 'src',
+// then go into the 'components' folder and find PostListItem.js".
 import PostListItem from '../components/PostListItem';
 // HIGHLIGHT END
 
@@ -12,10 +14,11 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // The useEffect hook for fetching data remains exactly the same.
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/posts');
+        const response = await axios.get('http://localhost:5001/api/posts');
         setPosts(response.data);
         setError(null);
       } catch (err) {
@@ -39,15 +42,14 @@ const HomePage = () => {
         <p>No posts yet. Be the first to create one!</p>
       ) : (
         // HIGHLIGHT START
-        // 2. We create a <div> to act as a container for our list.
+        // 2. We'll create a <div> to act as a container for our list.
         <div className="post-list">
           {/*
-            Instead of complex JSX, we now just render our PostListItem component.
-            - The 'key' prop is still essential and MUST be on the top-level element inside the map.
-            - The 'post' prop is how we pass the data for a single post down to the child component.
-              The name 'post' here must match the destructured name `{ post }` in the child.
+            This is our new, cleaner mapping logic. Instead of complex JSX,
+            we now just render our PostListItem component for each post.
           */}
           {posts.map(post => (
+            // We pass two props to the PostListItem component: 'key' and 'post'.
             <PostListItem key={post._id} post={post} />
           ))}
         </div>

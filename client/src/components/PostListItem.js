@@ -1,30 +1,32 @@
 // client/src/components/PostListItem.js
 
 import React from 'react';
+// HIGHLIGHT START
+// 1. Import the Link component from react-router-dom
+import { Link } from 'react-router-dom';
+// HIGHLIGHT END
 
-// This is a functional component that accepts 'props' as its argument.
-// We are using ES6 object destructuring to directly access the 'post' object from the props.
-// So instead of writing `props.post.title`, we can just write `post.title`.
 const PostListItem = ({ post }) => {
-
-  // Create a snippet from the markdown content.
-  // We'll remove markdown characters like '#' and '*' for a cleaner preview,
-  // then take the first 150 characters and add an ellipsis.
   const snippet = post.markdownContent
-    .replace(/[#*`]/g, '') // A simple regex to remove common markdown characters
+    .replace(/[#*`]/g, '')
     .substring(0, 150) + '...';
 
   return (
-    // We'll use a semantic <article> tag and give it a class for styling.
-    <article className="post-list-item">
-      <h2>{post.title}</h2>
-      <div className="post-meta">
-        <span>by {post.author}</span>
-        {/* We format the ISO date string into a more readable local date format. */}
-        <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-      </div>
-      <p>{snippet}</p>
-    </article>
+    // HIGHLIGHT START
+    // 2. Wrap the entire article in a Link component.
+    // The 'to' prop is constructed dynamically using a template literal.
+    // It creates a unique path for each post, e.g., "/post/60c72b2f9b1e8a5f1c9d9b4c".
+    <Link to={`/post/${post._id}`} className="post-link">
+      <article className="post-list-item">
+        <h2>{post.title}</h2>
+        <div className="post-meta">
+          <span>by {post.author}</span>
+          <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+        </div>
+        <p>{snippet}</p>
+      </article>
+    </Link>
+    // HIGHLIGHT END
   );
 };
 

@@ -91,3 +91,12 @@ code {
   color: #444;
   line-height: 1.6;
 }
+/* client/src/index.css */
+
+/* ... existing styles ... */
+
+/* --- Fix for Link component styling --- */
+.post-link {
+  color: inherit; /* This makes the link's text color the same as its parent */
+  text-decoration: none; /* This removes the default underline */
+}
