@@ -53,3 +53,41 @@ code {
 .navbar a:hover {
   color: #61dafb; /* A light blue, React-like color */
 }
+/* client/src/index.css */
+
+/* ... existing styles ... */
+
+/* --- Post List Item Styles --- */
+.post-list-item {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.post-list-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+}
+
+.post-list-item h2 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.post-list-item .post-meta {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.post-list-item p {
+  color: #444;
+  line-height: 1.6;
+}
