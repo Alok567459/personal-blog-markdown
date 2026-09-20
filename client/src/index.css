@@ -100,3 +100,44 @@ code {
   color: inherit; /* This makes the link's text color the same as its parent */
   text-decoration: none; /* This removes the default underline */
 }
+/* client/src/index.css */
+
+/* ... existing styles ... */
+
+/* --- Full Post Page Styles --- */
+.post-full {
+  max-width: 800px;
+  margin: 2rem auto; /* Center the article on the page */
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.post-full h1 {
+  font-size: 2.5rem;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.post-full-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #555;
+  font-style: italic;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.post-full-content pre {
+  background-color: #f4f4f4;
+  padding: 1rem;
+  border-radius: 5px;
+  white-space: pre-wrap; /* Ensures long lines wrap instead of overflowing */
+  word-wrap: break-word;
+  font-family: 'Courier New', Courier, monospace;
+  line-height: 1.6;
+}
