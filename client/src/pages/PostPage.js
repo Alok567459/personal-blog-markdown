@@ -3,6 +3,16 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
+// HIGHLIGHT START
+// Import the default export from the 'react-markdown' package we just installed.
+// The name 'ReactMarkdown' is the conventional name for this component.
+// This line tells our file: "I need to use the main component from the 'react-markdown' library."
+import ReactMarkdown from 'react-markdown';
+// HIGHLIGHT END
+
+import '../markdown-styles.css';
+
+
 
 const PostPage = () => {
   const { id } = useParams();
@@ -68,16 +78,13 @@ const PostPage = () => {
       
       {/* The main content area of the post. */}
       <div className="post-full-content">
-        <h4>Raw Markdown Content:</h4>
         {/*
-          For now, we'll display the raw markdown content.
-          Using a <pre> tag is ideal for this because it preserves whitespace (like line breaks and indentation)
-          and uses a monospaced font, making it look like code.
-          This allows us to see exactly what's stored in our database before we parse it.
+          The ReactMarkdown component is used here.
+          The markdown string from our post object (`post.markdownContent`)
+          is passed as a 'child' to the component. The component will
+          automatically parse this string and render the corresponding HTML elements.
         */}
-        <pre>
-          {post.markdownContent}
-        </pre>
+        <ReactMarkdown>{post.markdownContent}</ReactMarkdown>
       </div>
     </article>
   );
