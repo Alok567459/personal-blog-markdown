@@ -1,41 +1,63 @@
 // models/userModel.js
 
-// 1. Import Mongoose to interact with the MongoDB database.
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
-// 2. Define the schema for the User collection.
-// A schema is a blueprint that defines the structure and properties of documents.
 const userSchema = new mongoose.Schema(
   {
-    // The 'username' field. This will be used for logging in.
     username: {
-      type: String,       // The data type is a string.
-      required: true,     // This field must be provided to create a user.
-      unique: true,       // No two users can have the same username. Mongoose will create a unique index.
-      trim: true,         // Automatically removes any leading or trailing whitespace from the username.
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
     },
-    // The 'password' field.
     password: {
-      type: String,       // The data type is a string.
-      required: true,     // A password is required.
+      type: String,
+      required: true,
     },
   },
   {
-    // 3. Schema options:
-    // The 'timestamps' option tells Mongoose to automatically add two fields to our documents:
-    // - createdAt: A timestamp indicating when the document was created.
-    // - updatedAt: A timestamp indicating when the document was last updated.
-    // This is incredibly useful for tracking and auditing.
     timestamps: true,
   }
 );
 
-// 4. Create the Mongoose model from the schema.
-// A model is a compiled version of the schema that provides an interface for creating,
-// querying, updating, and deleting documents in the associated collection.
-// The first argument 'User' is the singular name of the model. Mongoose will automatically
-// look for or create a collection with the plural, lowercased version (i.e., 'users').
+// Mongoose pre-save hook for password hashing (from previous task)
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) {
+    return next();
+  }
+  try {
+    const salt = await bcrypt.genSalt(12);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// HIGHLIGHT START
+// 1. Define a custom method on the userSchema.
+// We attach a function named 'comparePassword' to the 'methods' object of our schema.
+// Any document created from this schema will have this method available.
+userSchema.methods.comparePassword = async function (candidatePassword) {
+  try {
+    // 2. Use bcrypt.compare() to check for a match.
+    // This is the core of the verification process.
+    // - candidatePassword: The plain-text password provided by the user during login.
+    // - this.password: The hashed password stored in the database for this specific user document.
+    //
+    // bcrypt.compare will automatically extract the salt from 'this.password',
+    // hash the 'candidatePassword' with that salt, and then securely compare the two hashes.
+    // It returns a promise that resolves to true if they match, and false otherwise.
+    const isMatch = await bcrypt.compare(candidatePassword, this.password);
+    return isMatch;
+  } catch (error) {
+    // In case of an unexpected error during comparison, we re-throw it to be handled by our controller.
+    throw error;
+  }
+};
+// HIGHLIGHT END
+
 const User = mongoose.model('User', userSchema);
 
-// 5. Export the model so it can be used in other parts of our application (like our controllers).
 module.exports = User;
