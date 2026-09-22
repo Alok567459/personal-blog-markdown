@@ -17,7 +17,7 @@ const cors = require('cors'); // Assuming you'll add/have cors
 
 // NEW: Import your route files
 const postRoutes = require('./routes/postRoutes');
-
+const authRoutes = require('./routes/authRoutes');
 
 // 2. Create an instance of an Express application
 // We execute the imported express module as a function to create our app object.
@@ -63,6 +63,7 @@ const PORT = process.env.PORT || 5000
 // it should be handled by the 'postRoutes' router.
 app.use('/api/posts', postRoutes);
 
+app.use('/api/auth', authRoutes);
 
 
 
