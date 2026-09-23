@@ -3,43 +3,63 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-// HIGHLIGHT START
-// 1. Import the page components we created in the previous step.
-// The './pages/HomePage' path tells React to look for HomePage.js
-// inside the 'pages' directory, which is in the same 'src' directory as App.js.
+// Import Pages
 import HomePage from './pages/HomePage';
 import PostPage from './pages/PostPage';
+import AdminDashboard from './pages/AdminDashboard';
 import LoginPage from './pages/LoginPage';
-import Navbar from './components/Navbar';
-// We'll also import the AdminDashboard to prepare for future steps.
-import AdminDashboard from './pages/AdminDashboard'; 
+import CreatePost from './pages/CreatePost';
+// HIGHLIGHT START
+import EditPost from './pages/EditPost'; // 1. Import the new EditPost page
 // HIGHLIGHT END
+
+// Import Components
+import Navbar from './components/Navbar';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
     <BrowserRouter>
-      <div className="App">
-
-         {/* 2. Render the Navbar component here. It will now appear on every page. */}
-        <Navbar />
-
-        <main style={{ padding: '1rem' }}>
+      <Navbar />
+      <main className="container">
         <Routes>
-          {/* HIGHLIGHT START */}
-          {/*
-            Each 'element' prop now receives a JSX component instance instead of placeholder text.
-            When the path matches, React Router will render the specified component.
-          */}
+          {/* --- Public Routes --- */}
           <Route path="/" element={<HomePage />} />
-          <Route path="/post/:id" element={<PostPage />} />
+          <Route path="/post/:slug" element={<PostPage />} />
           <Route path="/admin/login" element={<LoginPage />} />
-          
-          {/* This route will be protected later, but we can define it now. */}
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+
+          {/* --- Protected Admin Routes --- */}
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/create-post"
+            element={
+              <ProtectedRoute>
+                <CreatePost />
+              </ProtectedRoute>
+            }
+          />
+          {/* HIGHLIGHT START */}
+          {/* 2. Add the dynamic route for editing a post.
+               The ':id' part is a URL parameter that React Router will capture.
+               This route is also protected, as it should be. */}
+          <Route
+            path="/admin/edit-post/:id"
+            element={
+              <ProtectedRoute>
+                <EditPost />
+              </ProtectedRoute>
+            }
+          />
           {/* HIGHLIGHT END */}
         </Routes>
-         </main>
-      </div>
+      </main>
     </BrowserRouter>
   );
 }
