@@ -1,0 +1,69 @@
+/* client/src/pages/HomePage.css */
+
+.home-page {
+  max-width: 800px;
+  margin: 2rem auto;
+}
+
+/* You might already have styles for PostListItem, which is great! */
+.post-list-item {
+  background-color: #fff;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.post-list-item h2 a {
+  text-decoration: none;
+  color: #333;
+}
+
+.post-list-item h2 a:hover {
+  color: #007bff;
+}
+
+/* --- Pagination Controls Styling --- */
+.pagination-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.pagination-controls .page-info {
+  font-weight: 600;
+  color: #495057;
+}
+
+.pagination-controls .pagination-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.pagination-controls .btn {
+  padding: 8px 16px;
+  border: 1px solid #007bff;
+  background-color: #007bff;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+
+.pagination-controls .btn:hover:not(:disabled) {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+/* Style for disabled buttons */
+.pagination-controls .btn:disabled {
+  background-color: #cce5ff;
+  border-color: #cce5ff;
+  color: #6c757d;
+  cursor: not-allowed;
+}

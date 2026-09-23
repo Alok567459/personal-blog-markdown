@@ -13,7 +13,15 @@ const { protect } = require('../middleware/authMiddleware');
 // GET all posts
 router.get('/', postController.getAllPosts);
 // GET a single post by its ID
-router.get('/:id', postController.getPostById);
+
+
+// HIGHLIGHT START
+// GET a single post by its SLUG instead of ID
+// 1. The URL parameter is changed from ':id' to ':slug'.
+// 2. We point this route to our new 'getPostBySlug' controller function.
+router.get('/:slug', postController.getPostBySlug);
+// HIGHLIGHT END
+
 
 // --- PROTECTED ADMIN ROUTES ---
 // These routes are for modifying data and must be protected.

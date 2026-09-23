@@ -1,61 +1,101 @@
 // client/src/pages/HomePage.js
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-
-
-// HIGHLIGHT START
-// 1. Import the new component we created.
-// The path '../components/PostListItem' means "go up one level from 'pages' to 'src',
-// then go into the 'components' folder and find PostListItem.js".
-import PostListItem from '../components/PostListItem';
-// HIGHLIGHT END
+import apiService from '../services/apiService';
+import PostListItem from '../components/PostListItem'; // Assuming you have this component
+import './HomePage.css'; // Import the new stylesheet
 
 const HomePage = () => {
+  // 1. Existing state for posts, loading, and error.
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
 
-  // The useEffect hook for fetching data remains exactly the same.
+  // 2. NEW state for pagination.
+  // We start on page 1.
+  const [currentPage, setCurrentPage] = useState(1);
+  // We don't know the total pages yet, so we start with null.
+  const [totalPages, setTotalPages] = useState(null);
+
+  // 3. Update useEffect to be aware of the currentPage.
   useEffect(() => {
     const fetchPosts = async () => {
+      setLoading(true);
+      setError('');
       try {
-        const response = await axios.get('http://localhost:5001/api/posts');
-        setPosts(response.data);
-        setError(null);
+        // 4. Make the API request with pagination query parameters.
+        // We ask for the data for the 'currentPage' with a limit of 10 posts.
+        const response = await apiService.get(`/posts?page=${currentPage}&limit=10`);
+
+        // 5. The backend now returns a structured object. We destructure it.
+        const { posts: fetchedPosts, totalPages: fetchedTotalPages } = response.data;
+        
+        setPosts(fetchedPosts);
+        setTotalPages(fetchedTotalPages);
       } catch (err) {
-        setError('Failed to fetch posts. Please try again later.');
-        console.error('Error fetching posts:', err);
+        console.error("Failed to fetch posts:", err);
+        setError("Failed to load posts. Please try again.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchPosts();
-  }, []);
+  }, [currentPage]); // 6. The CRUCIAL dependency array. This effect re-runs whenever 'currentPage' changes.
 
+  // 7. Handler functions for our pagination buttons.
+  const handleNextPage = () => {
+    // We only move to the next page if we're not already on the last page.
+    if (currentPage < totalPages) {
+      setCurrentPage(prevPage => prevPage + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    // We only move to the previous page if we're not on the first page.
+    if (currentPage > 1) {
+      setCurrentPage(prevPage => prevPage - 1);
+    }
+  };
+
+  // UI Rendering Logic
   if (loading) return <div>Loading posts...</div>;
-  if (error) return <div style={{ color: 'red' }}>{error}</div>;
+  if (error) return <div>{error}</div>;
 
   return (
-    <div>
-      <h1>Blog Posts</h1>
-      {posts.length === 0 ? (
-        <p>No posts yet. Be the first to create one!</p>
-      ) : (
-        // HIGHLIGHT START
-        // 2. We'll create a <div> to act as a container for our list.
-        <div className="post-list">
-          {/*
-            This is our new, cleaner mapping logic. Instead of complex JSX,
-            we now just render our PostListItem component for each post.
-          */}
-          {posts.map(post => (
-            // We pass two props to the PostListItem component: 'key' and 'post'.
-            <PostListItem key={post._id} post={post} />
-          ))}
+    <div className="home-page">
+      <h1>Latest Posts</h1>
+      <div className="post-list">
+        {posts.length > 0 ? (
+          posts.map(post => <PostListItem key={post._id} post={post} />)
+        ) : (
+          <p>No posts to display.</p>
+        )}
+      </div>
+
+      {/* 8. Render the pagination controls only if there are posts and pages. */}
+      {totalPages > 0 && (
+        <div className="pagination-controls">
+          <div className="page-info">
+            Page {currentPage} of {totalPages}
+          </div>
+          <div className="pagination-buttons">
+            <button
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1} // Disable if on the first page
+              className="btn"
+            >
+              Previous
+            </button>
+            <button
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages} // Disable if on the last page
+              className="btn"
+            >
+              Next
+            </button>
+          </div>
         </div>
-        // HIGHLIGHT END
       )}
     </div>
   );

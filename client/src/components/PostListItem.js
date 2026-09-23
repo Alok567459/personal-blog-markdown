@@ -16,7 +16,7 @@ const PostListItem = ({ post }) => {
     // 2. Wrap the entire article in a Link component.
     // The 'to' prop is constructed dynamically using a template literal.
     // It creates a unique path for each post, e.g., "/post/60c72b2f9b1e8a5f1c9d9b4c".
-    <Link to={`/post/${post._id}`} className="post-link">
+    <Link to={`/post/${post.slug}`} className="post-link">
       <article className="post-list-item">
         <h2>{post.title}</h2>
         <div className="post-meta">

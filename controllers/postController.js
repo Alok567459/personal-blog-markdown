@@ -60,23 +60,38 @@ const createPost = async (req, res) => {
  */
 const getAllPosts = async (req, res) => {
   try {
-    // 1. Use the Post model's find() method to retrieve all documents.
-    // The empty object {} as the first argument means "match all documents".
-    // We then chain the sort() method to organize the results.
-    // { createdAt: -1 } sorts the posts by their creation date in descending order (newest first).
-    const posts = await Post.find({}).sort({ createdAt: -1 });
+    // 1. Get page and limit from query parameters, with default values.
+    // We use parseInt to convert the string from the query into a number.
+    // The || operator provides a default value if one isn't specified in the URL.
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10; // Default to 10 posts per page.
 
-    // 2. Send a success response.
-    // - HTTP status 200 means "OK". It's the standard success code for a GET request.
-    // - We send back a JSON object containing the array of posts we found.
-    //   If no posts are found, this will correctly return an empty array [].
-    res.status(200).json(posts);
+    // 2. Calculate the number of documents to skip.
+    // This is the core formula for pagination.
+    const skip = (page - 1) * limit;
+
+    // 3. Get the total number of posts in the collection.
+    // We need this to calculate the total number of pages.
+    // .countDocuments() is much more efficient than fetching all documents and getting the length.
+    const totalPosts = await Post.countDocuments();
+
+    // 4. Fetch the posts for the current page.
+    // We chain multiple Mongoose methods together to build our final query.
+    const posts = await Post.find()
+      .sort({ createdAt: -1 }) // Sort by creation date, newest first.
+      .skip(skip)               // Skip the documents for previous pages.
+      .limit(limit);            // Limit the results to the number per page.
+
+    // 5. Send a structured response with pagination metadata.
+    // The frontend will need this information to build pagination controls.
+    res.status(200).json({
+      posts,
+      currentPage: page,
+      totalPages: Math.ceil(totalPosts / limit), // Calculate total pages.
+      totalPosts,
+    });
 
   } catch (error) {
-    // 3. Handle potential server-side errors.
-    // If something goes wrong with the database query, it's a server error, not a client error.
-    // Therefore, we use the HTTP status 500 "Internal Server Error".
-    console.error(error); // Log the error for debugging.
     res.status(500).json({ message: 'Error fetching posts', error: error.message });
   }
 };
@@ -93,39 +108,42 @@ const getAllPosts = async (req, res) => {
  * @route   GET /api/posts/:id
  * @access  Public
  */
-const getPostById = async (req, res) => {
+// controllers/postController.js
+
+// ... other controller functions like getAllPosts, createPost, etc.
+
+// We are keeping the other functions (createPost, getAllPosts, etc.) as they are.
+// We only need to modify the function for retrieving a single post.
+
+// exports.getPostById = ... (This is the old function you are replacing)
+
+// HIGHLIGHT START
+// RENAMED and UPDATED function to fetch a single post by its SLUG
+const getPostBySlug = async (req, res) => {
   try {
-    // 1. Find the post in the database using the ID from the URL parameter.
-    // The `req.params.id` is automatically populated by Express from the route (e.g., /api/posts/some_id_value).
-    const post = await Post.findById(req.params.id);
+    // 1. Instead of finding by 'id', we now use Mongoose's findOne() method
+    //    to query for a document that has a 'slug' field matching the one
+    //    passed in the URL parameters (req.params.slug).
+    const post = await Post.findOne({ slug: req.params.slug });
 
     // 2. Check if a post was actually found.
-    if (post) {
-      // If the post exists, send a 200 OK status with the post data.
-      res.status(200).json(post);
-    } else {
-      // If post is null (meaning no document with that ID was found),
-      // it's not a server error, but a client error (they requested a non-existent resource).
-      // The correct response is a 404 Not Found.
-      res.status(404).json({ message: 'Post not found' });
-    }
-  } catch (error) {
-    // 3. Handle potential errors.
-    console.error(error); // Log the full error for debugging.
-    
-    // A common error here is a `CastError` from Mongoose, which occurs if the provided ID
-    // is not in a valid ObjectId format. This is a client-side error (bad request).
-    if (error.name === 'CastError') {
-      return res.status(400).json({ message: `Invalid post ID format: ${req.params.id}` });
+    //    If no post matches the slug, 'post' will be null.
+    if (!post) {
+      // If no post is found, it's appropriate to send a 404 Not Found status.
+      return res.status(404).json({ message: 'Post not found' });
     }
 
-    // For all other types of errors (e.g., database connection issues),
-    // we send a 500 Internal Server Error.
+    // 3. If the post is found, send it back with a 200 OK status.
+    res.status(200).json(post);
+  } catch (error) {
+    // Handle potential server errors (e.g., database connection issue).
     res.status(500).json({ message: 'Error fetching post', error: error.message });
   }
 };
+// HIGHLIGHT END
 
-// --- NEW FUNCTION ENDS HERE ---
+// exports.updatePost = ... (This function will also need updating later, but not in this task)
+// exports.deletePost = ... (This function will also need updating later, but not in this task)
 
 
 
@@ -224,7 +242,7 @@ const deletePost = async (req, res) => {
 module.exports = {
   createPost,
   getAllPosts,
-  getPostById,
+  getPostBySlug,
   updatePost,
-  deletePost, // <-- Add the new function here
+  deletePost,
 };

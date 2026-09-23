@@ -2,30 +2,32 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+
 // HIGHLIGHT START
 // Import the default export from the 'react-markdown' package we just installed.
 // The name 'ReactMarkdown' is the conventional name for this component.
 // This line tells our file: "I need to use the main component from the 'react-markdown' library."
 import ReactMarkdown from 'react-markdown';
 // HIGHLIGHT END
-
+import apiService from '../services/apiService';
 import '../markdown-styles.css';
 
 
 
 const PostPage = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
+  
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchPost = async () => {
+      if (!slug) return;
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get(`http://localhost:5001/api/posts/${id}`);
+        const response = await apiService.get(`/posts/${slug}`);
         setPost(response.data);
       } catch (err) {
         console.error("Error fetching post:", err);
@@ -40,7 +42,7 @@ const PostPage = () => {
     };
 
     fetchPost();
-  }, [id]);
+  }, [slug]);
 
   if (loading) {
     return <div>Loading post...</div>;
