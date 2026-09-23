@@ -1,35 +1,64 @@
 // client/src/pages/LoginPage.js
 
 import React, { useState } from 'react';
-// 1. Import the stylesheet we just created
+import axios from 'axios';
+// HIGHLIGHT START
+// 1. Import the useNavigate hook from react-router-dom
+import { useNavigate } from 'react-router-dom';
+// HIGHLIGHT END
 import './LoginPage.css';
 
 const LoginPage = () => {
-  // 2. Use the 'useState' hook to create state variables for our form fields.
-  // We initialize them with empty strings.
+  // HIGHLIGHT START
+  // 2. Call the useNavigate hook at the top level of the component to get the navigate function.
+  const navigate = useNavigate();
+  // HIGHLIGHT END
+  
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  // 3. Create a handler function for form submission.
-  const handleSubmit = (event) => {
-    // a. Prevent the default form submission behavior (which causes a page reload).
-    // This is crucial for Single Page Applications (SPAs).
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setError('');
+    setLoading(true);
 
-    // b. For now, we'll just log the credentials to the console to verify
-    // that our state management is working correctly.
-    console.log('Attempting to log in with:');
-    console.log('Username:', username);
-    console.log('Password:', password);
-    
-    // In the next task, we will replace this console.log with an API call.
+    try {
+      const response = await axios.post('http://localhost:5001/api/auth/login', {
+        username,
+        password,
+      });
+
+      // HIGHLIGHT START
+      // 3. Login was successful. Store the token.
+      // We use localStorage.setItem() to store the received token.
+      // We give it a key, 'token', so we can easily retrieve it later.
+      localStorage.setItem('token', response.data.token);
+
+      // 4. Redirect the user to the admin dashboard.
+      // The navigate function changes the URL in the browser and renders the
+      // component associated with the new route ('/admin/dashboard').
+      navigate('/admin/dashboard');
+      // HIGHLIGHT END
+
+    } catch (err) {
+      console.error('Login failed:', err);
+      if (err.response && err.response.data && err.response.data.message) {
+        setError(err.response.data.message);
+      } else {
+        setError('Login failed. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="login-page">
       <h2>Admin Login</h2>
-      {/* 4. The form element uses our handleSubmit function for its onSubmit event. */}
       <form onSubmit={handleSubmit} className="login-form">
+        {/* ... form inputs remain the same ... */}
         <div className="form-group">
           <label htmlFor="username">Username</label>
           <input
@@ -37,12 +66,10 @@ const LoginPage = () => {
             id="username"
             name="username"
             placeholder="Enter your username"
-            // 5. The input's value is "controlled" by the 'username' state variable.
             value={username}
-            // 6. The 'onChange' handler updates the state every time the user types.
-            // e.target.value contains the current text inside the input field.
             onChange={(e) => setUsername(e.target.value)}
             required
+            disabled={loading}
           />
         </div>
         <div className="form-group">
@@ -52,15 +79,15 @@ const LoginPage = () => {
             id="password"
             name="password"
             placeholder="Enter your password"
-            // The input's value is controlled by the 'password' state variable.
             value={password}
-            // The 'onChange' handler updates the state.
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={loading}
           />
         </div>
-        <button type="submit" className="login-button">
-          Log In
+        {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+        <button type="submit" className="login-button" disabled={loading}>
+          {loading ? 'Logging In...' : 'Log In'}
         </button>
       </form>
     </div>
