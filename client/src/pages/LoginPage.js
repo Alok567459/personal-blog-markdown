@@ -1,7 +1,7 @@
 // client/src/pages/LoginPage.js
 
 import React, { useState } from 'react';
-import axios from 'axios';
+
 // HIGHLIGHT START
 // 1. Import the useNavigate hook from react-router-dom
 import { useNavigate } from 'react-router-dom';
