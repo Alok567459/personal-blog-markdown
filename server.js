@@ -23,7 +23,9 @@ const authRoutes = require('./routes/authRoutes');
 // We execute the imported express module as a function to create our app object.
 // This 'app' object has methods for routing HTTP requests, configuring middleware, and starting the server.
 const app = express();
-
+app.get("/", (req, res) => {
+  res.send("Personal Blog Backend is running 🚀");
+});
 // 3. Define the port the server will listen on
 // A port is like a numbered door on your computer that programs can use to communicate over a network.
 // We've chosen 5000, a common port for local backend development, to avoid conflicts with other services
