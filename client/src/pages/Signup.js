@@ -1,46 +1,52 @@
-// client/src/pages/LoginPage.js
+// client/src/pages/Signup.js
 
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import './LoginPage.css';
 import apiService from '../services/apiService';
+import './Signup.css';
 
-const LoginPage = () => {
+const Signup = () => {
   const navigate = useNavigate();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const response = await apiService.post('/auth/login', {
+      const response = await apiService.post('/auth/signup', {
         username,
         password,
+        confirmPassword,
       });
 
-      // Store token and role
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('role', response.data.role);
 
-      // Redirect based on role
-      if (response.data.role === 'admin') {
-        navigate('/admin/dashboard');
-      } else {
-        navigate('/dashboard');
-      }
+      navigate('/dashboard');
 
     } catch (err) {
-      console.error('Login failed:', err);
+      console.error('Signup failed:', err);
       if (err.response && err.response.data && err.response.data.message) {
         setError(err.response.data.message);
       } else {
-        setError('Login failed. Please try again.');
+        setError('Signup failed. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -49,47 +55,63 @@ const LoginPage = () => {
 
   return (
     <div className="login-page">
-      <h2>Log In</h2>
+      <h2>Create Account</h2>
       <form onSubmit={handleSubmit} className="login-form">
         <div className="form-group">
-          <label htmlFor="username">Username</label>
+          <label htmlFor="signup-username">Username</label>
           <input
             type="text"
-            id="username"
+            id="signup-username"
             name="username"
-            placeholder="Enter your username"
+            placeholder="Choose a username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
             disabled={loading}
+            autoComplete="username"
           />
         </div>
         <div className="form-group">
-          <label htmlFor="password">Password</label>
+          <label htmlFor="signup-password">Password</label>
           <input
             type="password"
-            id="password"
+            id="signup-password"
             name="password"
-            placeholder="Enter your password"
+            placeholder="At least 6 characters"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             disabled={loading}
+            autoComplete="new-password"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="signup-confirm-password">Confirm Password</label>
+          <input
+            type="password"
+            id="signup-confirm-password"
+            name="confirmPassword"
+            placeholder="Re-enter your password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            disabled={loading}
+            autoComplete="new-password"
           />
         </div>
         {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
         <button type="submit" className="login-button" disabled={loading}>
-          {loading ? 'Logging In...' : 'Log In'}
+          {loading ? 'Creating Account...' : 'Sign Up'}
         </button>
       </form>
       <p style={{ textAlign: 'center', marginTop: '1.25rem', fontSize: '0.92rem', color: '#6b7280' }}>
-        Don't have an account?{' '}
-        <Link to="/signup" style={{ color: '#007bff', fontWeight: '600', textDecoration: 'none' }}>
-          Sign Up
+        Already have an account?{' '}
+        <Link to="/login" style={{ color: '#007bff', fontWeight: '600', textDecoration: 'none' }}>
+          Log In
         </Link>
       </p>
     </div>
   );
 };
 
-export default LoginPage;
+export default Signup;

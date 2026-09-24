@@ -24,6 +24,9 @@ router.get('/', postController.getAllPosts);
 router.get('/category/:categoryName', postController.getPostsByCategory);
 // HIGHLIGHT END
 
+// NEW ROUTE: GET posts belonging to the currently authenticated user.
+// Must be placed before '/:slug' for the same reason.
+router.get('/mine', protect, postController.getMyPosts);
 
 // Dedicated route to fetch a single post by ID
 router.get('/id/:id', postController.getPostById);

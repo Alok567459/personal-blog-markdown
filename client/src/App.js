@@ -8,14 +8,18 @@ import HomePage from './pages/HomePage';
 import PostPage from './pages/PostPage';
 import AdminDashboard from './pages/AdminDashboard';
 import LoginPage from './pages/LoginPage';
+import Signup from './pages/Signup';
 import CreatePost from './pages/CreatePost';
-// HIGHLIGHT START
-import EditPost from './pages/EditPost'; // 1. Import the new EditPost page
-// HIGHLIGHT END
+import EditPost from './pages/EditPost';
 import CategoryPage from './pages/CategoryPage';
+import UserDashboard from './pages/UserDashboard';
+import UserCreatePost from './pages/UserCreatePost';
+import UserEditPost from './pages/UserEditPost';
+
 // Import Components
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
+import UserProtectedRoute from './components/UserProtectedRoute';
 
 function App() {
   return (
@@ -26,11 +30,40 @@ function App() {
           {/* --- Public Routes --- */}
           <Route path="/" element={<HomePage />} />
           <Route path="/post/:slug" element={<PostPage />} />
-
           <Route path="/category/:categoryName" element={<CategoryPage />} />
 
-          
+          {/* Login — accessible at both /login and /admin/login */}
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/admin/login" element={<LoginPage />} />
+
+          {/* Signup — public route for new users */}
+          <Route path="/signup" element={<Signup />} />
+
+          {/* --- Protected User Routes (any authenticated user) --- */}
+          <Route
+            path="/dashboard"
+            element={
+              <UserProtectedRoute>
+                <UserDashboard />
+              </UserProtectedRoute>
+            }
+          />
+          <Route
+            path="/create-post"
+            element={
+              <UserProtectedRoute>
+                <UserCreatePost />
+              </UserProtectedRoute>
+            }
+          />
+          <Route
+            path="/edit-post/:id"
+            element={
+              <UserProtectedRoute>
+                <UserEditPost />
+              </UserProtectedRoute>
+            }
+          />
 
           {/* --- Protected Admin Routes --- */}
           <Route
@@ -49,10 +82,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* HIGHLIGHT START */}
-          {/* 2. Add the dynamic route for editing a post.
-               The ':id' part is a URL parameter that React Router will capture.
-               This route is also protected, as it should be. */}
           <Route
             path="/admin/edit-post/:id"
             element={
@@ -61,7 +90,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* HIGHLIGHT END */}
         </Routes>
       </main>
     </BrowserRouter>

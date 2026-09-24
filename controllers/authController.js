@@ -49,11 +49,77 @@ exports.login = async (req, res) => {
     res.status(200).json({
       status: 'success',
       token,
+      role: user.role,
     });
 
   } catch (error) {
     // 9. Handle any unexpected server errors
     console.error('LOGIN ERROR:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'An internal server error occurred.',
+    });
+  }
+};
+
+// Signup function — registers a new regular user and issues a JWT
+exports.signup = async (req, res) => {
+  try {
+    const { username, password, confirmPassword } = req.body;
+
+    // Validate all fields are present
+    if (!username || !password || !confirmPassword) {
+      return res.status(400).json({
+        status: 'fail',
+        message: 'Please provide a username, password, and confirm password.',
+      });
+    }
+
+    // Check passwords match
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        status: 'fail',
+        message: 'Passwords do not match.',
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        status: 'fail',
+        message: 'Password must be at least 6 characters long.',
+      });
+    }
+
+    // Check if username is already taken
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      return res.status(409).json({
+        status: 'fail',
+        message: 'Username already taken. Please choose another.',
+      });
+    }
+
+    // Create the new user with the default 'user' role
+    const newUser = await User.create({
+      username,
+      password,
+      role: 'user',
+    });
+
+    // Issue a JWT so the user is immediately logged in
+    const payload = { id: newUser._id };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES_IN,
+    });
+
+    res.status(201).json({
+      status: 'success',
+      token,
+      role: newUser.role,
+    });
+
+  } catch (error) {
+    console.error('SIGNUP ERROR:', error);
     res.status(500).json({
       status: 'error',
       message: 'An internal server error occurred.',

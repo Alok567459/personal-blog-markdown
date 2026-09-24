@@ -16,7 +16,7 @@ const createPost = async (req, res) => {
   try {
     // 2. Destructure the required fields from the request body.
     // The `req.body` object contains the JSON data sent by the client, thanks to our `express.json()` middleware.
-    const { title, markdownContent, categories, author } = req.body;
+    const { title, markdownContent, categories } = req.body;
 
     // A simple backend validation check.
     if (!title || !markdownContent) {
@@ -25,26 +25,20 @@ const createPost = async (req, res) => {
     }
 
     // 3. Use the Mongoose `create` method on our Post model.
-    // This is an async operation, so we use `await`.
-    // We pass an object with the data for the new post. The fields should match our Post schema.
+    // We store authorId (the logged-in user's _id) and use their username as the author name.
     const newPost = await Post.create({
       title,
       markdownContent,
       categories,
-      author, // This will use the provided author or the default 'Admin' from our schema.
+      author: req.user.username,   // Use the logged-in user's username
+      authorId: req.user._id,      // Store the user's ObjectId for ownership checks
     });
 
     // 4. Send a success response.
-    // - HTTP status 201 means "Created". It's the most appropriate status for a successful POST request.
-    // - We send back a JSON object containing the newly created post document. This is useful for the client,
-    //   which might want to immediately display the new post or redirect to its page.
     res.status(201).json(newPost);
 
   } catch (error) {
     // 5. Handle potential errors.
-    // This could be a validation error from Mongoose (if the data doesn't match the schema)
-    // or a database connection issue.
-    // We send a 400 Bad Request status, as the error is likely due to invalid data from the client.
     console.error(error); // Log the full error to the console for debugging.
     res.status(400).json({ message: 'Error creating post', error: error.message });
   }
@@ -201,16 +195,24 @@ const getPostsByCategory = async (req, res) => {
  */
 const updatePost = async (req, res) => {
   try {
-
-    // HIGHLIGHT START
-    // 3. Destructure 'categories' from the request body here as well.
     const { title, markdownContent, categories } = req.body;
 
-    // 4. Create an update object that includes the new categories.
+    // First, find the post to check ownership
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    // Ownership check: admin can edit any post; regular user can only edit their own
+    if (req.user.role !== 'admin' && String(post.authorId) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'You are not authorized to edit this post.' });
+    }
+
+    // Build the update payload
     const updatedData = {
       title,
       markdownContent,
-      categories, // Add the categories to the update payload
+      categories,
     };
 
     // If the title was updated, regenerate the slug as well
@@ -218,43 +220,31 @@ const updatePost = async (req, res) => {
       updatedData.slug = slugify(title, { lower: true, strict: true });
     }
 
-    // 1. Find the post by its ID and update it in a single atomic operation.
+    // Apply the update
     const updatedPost = await Post.findByIdAndUpdate(
-      req.params.id, // The ID of the post to find
+      req.params.id,
       updatedData,
       {
-        new: true,           // Option to return the document *after* the update has been applied
-        runValidators: true, // Option to enforce schema validation rules on the update
+        new: true,
+        runValidators: true,
       }
     );
 
-    // 2. Check if a post was found and updated.
-    if (updatedPost) {
-      // If the update was successful, send a 200 OK status with the updated post data.
-      res.status(200).json(updatedPost);
-    } else {
-      // If `findByIdAndUpdate` returns null, it means no document with that ID was found.
-      // We send back a 404 Not Found, just like in getPostById.
-      res.status(404).json({ message: 'Post not found' });
-    }
+    res.status(200).json(updatedPost);
+
   } catch (error) {
-    // 3. Handle potential errors.
     console.error(error);
 
-    // Handle invalid ID format (CastError) just like we did in getPostById.
     if (error.name === 'CastError') {
       return res.status(400).json({ message: `Invalid post ID format: ${req.params.id}` });
     }
-    // Handle duplicate slug error if another post already has this title
     if (error.code === 11000) {
       return res.status(400).json({ message: 'A post with this title already exists. Please choose a different title.' });
     }
-    // Handle validation errors from Mongoose (e.g., a required field is set to empty).
     if (error.name === 'ValidationError') {
       return res.status(400).json({ message: 'Validation Error', error: error.message });
     }
 
-    // For all other errors, send a 500 Internal Server Error.
     res.status(500).json({ message: 'Error updating post', error: error.message });
   }
 };
@@ -270,30 +260,29 @@ const updatePost = async (req, res) => {
  */
 const deletePost = async (req, res) => {
   try {
-    // 1. Find the post by its ID and delete it in a single atomic operation.
-    const deletedPost = await Post.findByIdAndDelete(req.params.id);
+    // 1. Find the post first to check ownership
+    const post = await Post.findById(req.params.id);
 
-    // 2. Check if a post was actually found and deleted.
-    if (deletedPost) {
-      // If the deletion was successful, the `deletedPost` variable will hold the document
-      // that was just removed. We send back a 200 OK status with a confirmation message.
-      // Another valid approach is to send a 204 No Content status with no body.
-      res.status(200).json({ message: 'Post deleted successfully' });
-    } else {
-      // If `findByIdAndDelete` returns null, no document with that ID was found.
-      // We send back a 404 Not Found error.
-      res.status(404).json({ message: 'Post not found' });
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
     }
+
+    // Ownership check: admin can delete any post; regular user can only delete their own
+    if (req.user.role !== 'admin' && String(post.authorId) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'You are not authorized to delete this post.' });
+    }
+
+    await Post.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: 'Post deleted successfully' });
+
   } catch (error) {
-    // 3. Handle potential errors.
+    // Handle potential errors.
     console.error(error);
 
-    // Handle invalid ID format (CastError), consistent with our other functions.
     if (error.name === 'CastError') {
       return res.status(400).json({ message: `Invalid post ID format: ${req.params.id}` });
     }
 
-    // For all other errors, send a 500 Internal Server Error.
     res.status(500).json({ message: 'Error deleting post', error: error.message });
   }
 };
@@ -301,12 +290,27 @@ const deletePost = async (req, res) => {
 // --- NEW FUNCTION ENDS HERE ---
 
 // Update the exports to include our final CRUD function
+/**
+ * @desc    Get all posts belonging to the currently authenticated user
+ * @route   GET /api/posts/mine
+ * @access  Protected
+ */
+const getMyPosts = async (req, res) => {
+  try {
+    const posts = await Post.find({ authorId: req.user._id }).sort({ createdAt: -1 });
+    res.status(200).json({ posts });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching your posts', error: error.message });
+  }
+};
+
 module.exports = {
   createPost,
   getAllPosts,
   getPostById,
   getPostBySlug,
   getPostsByCategory,
+  getMyPosts,
   updatePost,
   deletePost,
 };

@@ -1,0 +1,4 @@
+/* client/src/pages/Signup.css */
+/* The Signup page reuses the exact same classes as LoginPage.css.
+   This file imports those styles so Signup.js has them available. */
+@import './LoginPage.css';

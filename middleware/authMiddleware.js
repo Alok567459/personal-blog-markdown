@@ -62,3 +62,15 @@ exports.protect = async (req, res, next) => {
     });
   }
 };
+
+// Middleware to restrict access to admins only.
+// Must be used AFTER the 'protect' middleware, which attaches req.user.
+exports.isAdmin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    return next();
+  }
+  return res.status(403).json({
+    status: 'fail',
+    message: 'Access denied. Admins only.',
+  });
+};

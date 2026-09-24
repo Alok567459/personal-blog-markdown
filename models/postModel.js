@@ -36,6 +36,10 @@ const postSchema = new mongoose.Schema(
       type: String,
       required: [true, 'A post must have an author'],
     },
+    authorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
   },
   {
     // The timestamps option automatically adds createdAt and updatedAt fields.

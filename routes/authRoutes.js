@@ -11,5 +11,8 @@ const authController = require('../controllers/authController');
 // it will be handled by the 'login' function in our authController.
 router.post('/login', authController.login);
 
-// 3. Export the router so it can be used in server.js
+// 3. Define the signup route for new regular users.
+router.post('/signup', authController.signup);
+
+// 4. Export the router so it can be used in server.js
 module.exports = router;
