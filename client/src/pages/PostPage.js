@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
+import { Helmet } from 'react-helmet-async';
 // HIGHLIGHT START
 // Import the default export from the 'react-markdown' package we just installed.
 // The name 'ReactMarkdown' is the conventional name for this component.
@@ -44,6 +45,21 @@ const PostPage = () => {
     fetchPost();
   }, [slug]);
 
+
+  // A helper function to create a short, clean description from the markdown content.
+  const createMetaDescription = (markdown) => {
+    if (!markdown) return '';
+    // Remove Markdown formatting and trim to a suitable length (e.g., 155 chars).
+    const plainText = markdown
+      .replace(/!\[.*?\]\(.*?\)/g, '') // Remove images
+      .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Keep link text
+      .replace(/[`*#_~]/g, '') // Remove markdown characters
+      .replace(/\s+/g, ' '); // Normalize whitespace
+    
+    return plainText.substring(0, 155).trim() + '...';
+  };
+
+
   if (loading) {
     return <div>Loading post...</div>;
   }
@@ -63,7 +79,18 @@ const PostPage = () => {
   return (
     // We use the <article> semantic tag for a self-contained piece of content like a blog post.
     <article className="post-full">
-      {/* Display the post's title in a main heading. */}
+
+
+      <Helmet>
+        {/* We create a dynamic title using the post's title. */}
+        <title>{`${post.title} | My Awesome Blog`}</title>
+        {/* We create a dynamic meta description from the post's content. */}
+        <meta 
+          name="description" 
+          content={createMetaDescription(post.markdownContent)} 
+        />
+      </Helmet>
+      
       <h1>{post.title}</h1>
       
       {/* A metadata section for author and publication date. */}

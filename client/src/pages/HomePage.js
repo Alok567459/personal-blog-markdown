@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import apiService from '../services/apiService';
 import PostListItem from '../components/PostListItem'; // Assuming you have this component
 import './HomePage.css'; // Import the new stylesheet
-
+import { Helmet } from 'react-helmet-async';
 const HomePage = () => {
   // 1. Existing state for posts, loading, and error.
   const [posts, setPosts] = useState([]);
@@ -65,6 +65,20 @@ const HomePage = () => {
   return (
     <div className="home-page">
       <h1>Latest Posts</h1>
+
+      {/* HIGHLIGHT START */}
+      {/* 2. Add the Helmet component. It can be placed anywhere in the return JSX.
+           Anything you put inside it will be injected into the document's <head>. */}
+      <Helmet>
+        <title>My Awesome Blog - Latest Posts</title>
+        <meta 
+          name="description" 
+          content="Welcome to My Awesome Blog. Read the latest articles on web development, technology, and more." 
+        />
+      </Helmet>
+      {/* HIGHLIGHT END */}
+
+      
       <div className="post-list">
         {posts.length > 0 ? (
           posts.map(post => <PostListItem key={post._id} post={post} />)

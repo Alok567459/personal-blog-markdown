@@ -3,6 +3,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css'; // We'll keep the base styles for now
+
+import { HelmetProvider } from 'react-helmet-async';
+
 import App from './App';
 
 // This is the core logic that tells React where to render the application.
@@ -12,6 +15,8 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 // It then renders your main <App /> component inside that root element.
 root.render(
   <React.StrictMode>
-    <App />
+    <HelmetProvider>
+      <App />
+    </HelmetProvider>
   </React.StrictMode>
 );
