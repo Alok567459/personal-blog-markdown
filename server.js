@@ -31,17 +31,22 @@ const app = express();
 
 // HIGHLIGHT START
 // 1. Define the list of allowed origins (your "guest list").
-//    We pull the frontend URL from the environment variables.
-const whitelist = [process.env.FRONTEND_URL];
+//    We support both local development and the deployed Vercel frontend.
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://personal-blog-markdown.vercel.app',
+  ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(url => url.trim()) : [])
+];
+const whitelist = Array.from(new Set(allowedOrigins.filter(Boolean)));
 
 // 2. Configure CORS options with a dynamic origin function.
 const corsOptions = {
   // The 'origin' parameter is the domain making the request (e.g., 'http://localhost:3000').
   origin: (origin, callback) => {
-    // 3. Check if the incoming origin is in our whitelist.
+    // 3. Check if the incoming origin is in our whitelist or matches allowed preview domains.
     //    The '|| !origin' part is a crucial addition. It allows requests that don't have an origin,
     //    such as server-to-server requests or requests from tools like Postman.
-    if (whitelist.indexOf(origin) !== -1 || !origin) {
+    if (!origin || whitelist.indexOf(origin) !== -1 || (typeof origin === 'string' && origin.endsWith('.vercel.app'))) {
       // If the origin is on the guest list (or there's no origin), allow it.
       // The callback's first argument is for an error (null here), and the second is a boolean (true = allow).
       callback(null, true);
