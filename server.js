@@ -29,13 +29,42 @@ const app = express();
 // We've chosen 5000, a common port for local backend development, to avoid conflicts with other services
 // (like the React development server, which often uses port 3000).
 
+// HIGHLIGHT START
+// 1. Define the list of allowed origins (your "guest list").
+//    We pull the frontend URL from the environment variables.
+const whitelist = [process.env.FRONTEND_URL];
+
+// 2. Configure CORS options with a dynamic origin function.
+const corsOptions = {
+  // The 'origin' parameter is the domain making the request (e.g., 'http://localhost:3000').
+  origin: (origin, callback) => {
+    // 3. Check if the incoming origin is in our whitelist.
+    //    The '|| !origin' part is a crucial addition. It allows requests that don't have an origin,
+    //    such as server-to-server requests or requests from tools like Postman.
+    if (whitelist.indexOf(origin) !== -1 || !origin) {
+      // If the origin is on the guest list (or there's no origin), allow it.
+      // The callback's first argument is for an error (null here), and the second is a boolean (true = allow).
+      callback(null, true);
+    } else {
+      // If the origin is not on the guest list, reject it.
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  // Some legacy browsers (IE11, various SmartTVs) choke on 204
+  optionsSuccessStatus: 200
+};
+
+// 4. Apply the configured CORS middleware to your Express app.
+app.use(cors(corsOptions));
+// HIGHLIGHT END
+
 
 // --- MIDDLEWARE ---
 // This is the crucial line. express.json() is a built-in middleware function in Express.
 // It parses incoming requests with JSON payloads and is based on body-parser.
 // When a request comes in with a 'Content-Type: application/json' header, this middleware
 // will parse the JSON data and make it available on the `req.body` property.
-app.use(cors());
+
 
 app.use(express.json());
 
