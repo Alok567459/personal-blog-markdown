@@ -15,7 +15,7 @@ const AdminDashboard = () => {
     const fetchPosts = async () => {
       try {
         const response = await apiService.get('/posts');
-        setPosts(response.data);
+        setPosts(response.data.posts);
       } catch (err) {
         console.error('Failed to fetch posts:', err);
         setError('Failed to fetch posts. Please try again later.');

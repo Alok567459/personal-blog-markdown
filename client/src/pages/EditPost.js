@@ -30,6 +30,17 @@ const EditPost = () => {
         // 6. Once data is fetched, populate the form's state.
         setTitle(response.data.title);
         setMarkdownContent(response.data.markdownContent);
+
+        // HIGHLIGHT START
+        // 2. Pre-fill the categories input.
+        // We check if 'categories' exists and is an array.
+        // The .join(', ') method converts the array ['React', 'Node'] into the string "React, Node".
+        if (response.data.categories && Array.isArray(response.data.categories)) {
+          setCategories(response.data.categories.join(', '));
+        }
+        // HIGHLIGHT END
+
+
       } catch (err) {
         console.error('Failed to fetch post for editing:', err);
         setError('Failed to load post data. Please try again.');
@@ -47,11 +58,15 @@ const EditPost = () => {
     setSubmitting(true);
     setError('');
 
+
+    
     if (!title.trim() || !markdownContent.trim()) {
       setError('Title and content are required.');
       setSubmitting(false);
       return;
     }
+
+    const categoriesArray = categories.split(',').map(cat => cat.trim()).filter(cat => cat);
 
     try {
       // 8. Send a PUT request to the backend with the updated data.
@@ -59,6 +74,7 @@ const EditPost = () => {
       await apiService.put(`/posts/${id}`, {
         title,
         markdownContent,
+        categories: categoriesArray
       });
 
       // 9. On success, navigate back to the dashboard.
@@ -101,6 +117,24 @@ const EditPost = () => {
             disabled={submitting}
           />
         </div>
+
+         {/* HIGHLIGHT START */}
+        {/* 5. Add the same categories input field to the Edit form. */}
+        <div className="form-group">
+          <label htmlFor="categories">Categories (comma-separated)</label>
+          <input
+            type="text"
+            id="categories"
+            className="form-control"
+            value={categories}
+            onChange={(e) => setCategories(e.target.value)}
+            placeholder="e.g., React, Web Development, Tutorial"
+            disabled={submitting}
+          />
+        </div>
+        {/* HIGHLIGHT END */}
+
+        
         {error && <p className="error-message">{error}</p>}
         <button type="submit" className="submit-btn" disabled={submitting}>
           {submitting ? 'Updating...' : 'Update Post'}

@@ -1,10 +1,7 @@
 // models/postModel.js
 
 const mongoose = require('mongoose');
-// HIGHLIGHT START
-// 1. Import the slugify library that we installed.
 const slugify = require('slugify');
-// HIGHLIGHT END
 
 const postSchema = new mongoose.Schema(
   {
@@ -21,37 +18,39 @@ const postSchema = new mongoose.Schema(
       type: String,
       required: [true, 'A post must have content'],
     },
+    // HIGHLIGHT START
+    // 1. Add the new 'categories' field.
+    categories: {
+      // 2. Define the type as an array of Strings.
+      // This is the Mongoose syntax for saying this field will hold a list of string values.
+      // e.g., ['React', 'Node.js', 'Tutorial']
+      type: [String],
+      // 3. We'll add a default value of an empty array.
+      // This ensures that new posts without any categories specified
+      // will have a 'categories' field, which can prevent potential errors
+      // on the frontend if it expects the array to always exist.
+      default: [],
+    },
+    // HIGHLIGHT END
     author: {
       type: String,
       required: [true, 'A post must have an author'],
     },
   },
   {
+    // The timestamps option automatically adds createdAt and updatedAt fields.
     timestamps: true,
   }
 );
 
-// HIGHLIGHT START
-// 2. Define the Mongoose Document Middleware (a pre-save hook).
-// This function will run before any document created from this schema is saved.
-// We use a standard function() declaration to get access to the 'this' keyword,
-// which points to the current document being saved.
+// Mongoose pre-save hook for slug generation
+// This logic remains unchanged and will continue to work perfectly.
 postSchema.pre('save', function(next) {
-  // 3. We only want to generate a slug if the post is new OR if the title has been modified.
-  // If we're just updating the content, we don't want the URL (slug) to change,
-  // as this would break existing links to the post.
   if (this.isModified('title')) {
-    // 4. Generate the slug from the document's title.
-    // The 'this' keyword refers to the document about to be saved.
-    // We pass an options object to slugify to make the slug lowercase.
     this.slug = slugify(this.title, { lower: true, strict: true });
   }
-
-  // 5. Call next() to proceed with the actual save operation.
-  // If we don't call next(), the save process will be stuck here forever.
   next();
 });
-// HIGHLIGHT END
 
 const Post = mongoose.model('Post', postSchema);
 

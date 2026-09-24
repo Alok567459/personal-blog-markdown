@@ -9,6 +9,12 @@ const CreatePost = () => {
   // 1. Hooks for state management and navigation.
   const [title, setTitle] = useState('');
   const [markdownContent, setMarkdownContent] = useState('');
+
+  // HIGHLIGHT START
+  // 1. Add a new state variable to hold the categories as a string.
+  const [categories, setCategories] = useState('');
+  // HIGHLIGHT END
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -26,6 +32,15 @@ const CreatePost = () => {
       return;
     }
 
+     // HIGHLIGHT START
+    // 2. Transform the categories string into an array of clean strings.
+    // .split(',') creates the array.
+    // .map(cat => cat.trim()) removes any leading/trailing whitespace from each category.
+    // .filter(cat => cat !== '') removes any empty strings that might result from extra commas (e.g., "React,, Node").
+    const categoriesArray = categories.split(',').map(cat => cat.trim()).filter(cat => cat);
+    // HIGHLIGHT END
+
+
     try {
       // 3. Use our apiService to send the new post data to the backend.
       // The interceptor will automatically add the auth token.
@@ -35,6 +50,7 @@ const CreatePost = () => {
       await apiService.post('/posts', {
         title,
         markdownContent,
+        categories: categoriesArray, // Send the processed array
         author: 'Admin' // A simple placeholder for now.
       });
 
@@ -77,6 +93,25 @@ const CreatePost = () => {
             disabled={loading}
           />
         </div>
+
+         {/* HIGHLIGHT START */}
+        {/* 4. Add the new input field for categories to the form. */}
+        {/*    It's a controlled component tied to our 'categories' state. */}
+        <div className="form-group">
+          <label htmlFor="categories">Categories (comma-separated)</label>
+          <input
+            type="text"
+            id="categories"
+            className="form-control"
+            value={categories}
+            onChange={(e) => setCategories(e.target.value)}
+            placeholder="e.g., React, Web Development, Tutorial"
+            disabled={loading}
+          />
+        </div>
+        {/* HIGHLIGHT END */}
+
+        
         {error && <p className="error-message">{error}</p>}
         <button type="submit" className="submit-btn" disabled={loading}>
           {loading ? 'Publishing...' : 'Publish Post'}
