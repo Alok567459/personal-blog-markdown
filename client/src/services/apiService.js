@@ -15,7 +15,7 @@ const apiService = axios.create({
   headers: {
     'Content-Type': 'application/json',
     // 3. Conditionally add the Authorization header if a token exists.
-    ...(token && { Authorization: `Bearer ${token}` }),
+    
   },
 });
 // HIGHLIGHT END

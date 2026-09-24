@@ -25,7 +25,7 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      const response = await apiService.post("/auth/login", {
+      const response =await apiService.post("/auth/login", {
         username,
         password,
       });
