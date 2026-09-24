@@ -12,7 +12,7 @@ import CreatePost from './pages/CreatePost';
 // HIGHLIGHT START
 import EditPost from './pages/EditPost'; // 1. Import the new EditPost page
 // HIGHLIGHT END
-
+import CategoryPage from './pages/CategoryPage';
 // Import Components
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -26,6 +26,10 @@ function App() {
           {/* --- Public Routes --- */}
           <Route path="/" element={<HomePage />} />
           <Route path="/post/:slug" element={<PostPage />} />
+
+          <Route path="/category/:categoryName" element={<CategoryPage />} />
+
+          
           <Route path="/admin/login" element={<LoginPage />} />
 
           {/* --- Protected Admin Routes --- */}

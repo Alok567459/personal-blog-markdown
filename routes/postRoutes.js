@@ -15,8 +15,21 @@ router.get('/', postController.getAllPosts);
 // GET a single post by its ID
 
 
+
 // HIGHLIGHT START
-// GET a single post by its SLUG instead of ID
+// NEW ROUTE: GET all posts filtered by a specific category.
+// This route must be placed *before* the '/:slug' route. Express matches routes
+// in order, and if '/:slug' came first, it would incorrectly interpret 'category'
+// as a slug.
+router.get('/category/:categoryName', postController.getPostsByCategory);
+// HIGHLIGHT END
+
+
+// Dedicated route to fetch a single post by ID
+router.get('/id/:id', postController.getPostById);
+
+// HIGHLIGHT START
+// GET a single post by its SLUG or ID
 // 1. The URL parameter is changed from ':id' to ':slug'.
 // 2. We point this route to our new 'getPostBySlug' controller function.
 router.get('/:slug', postController.getPostBySlug);

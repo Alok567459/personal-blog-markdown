@@ -10,11 +10,15 @@ import './CreatePost.css';
 const EditPost = () => {
   // 3. Get the post ID from the URL parameters using the useParams hook.
   const { id } = useParams();
-
+  
   // 4. Set up state for form fields, loading, and errors.
   const [title, setTitle] = useState('');
   const [markdownContent, setMarkdownContent] = useState('');
   const [error, setError] = useState('');
+
+  const [categories, setCategories] = useState('');
+
+  
   // We add an extra loading state for the initial data fetch.
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -134,7 +138,7 @@ const EditPost = () => {
         </div>
         {/* HIGHLIGHT END */}
 
-        
+
         {error && <p className="error-message">{error}</p>}
         <button type="submit" className="submit-btn" disabled={submitting}>
           {submitting ? 'Updating...' : 'Update Post'}

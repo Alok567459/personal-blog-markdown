@@ -1,0 +1,25 @@
+/* client/src/components/CategoryTag.css */
+
+.category-tag {
+  /* ... your existing styles ... */
+  display: inline-block;
+  background-color: #e9ecef;
+  color: #495057;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+}
+
+/* HIGHLIGHT START */
+/* Add a hover effect to indicate the tag is clickable. */
+.category-tag:hover {
+  background-color: #007bff;
+  color: #fff;
+  cursor: pointer;
+}
+/* HIGHLIGHT END */

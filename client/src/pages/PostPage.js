@@ -12,7 +12,7 @@ import ReactMarkdown from 'react-markdown';
 // HIGHLIGHT END
 import apiService from '../services/apiService';
 import '../markdown-styles.css';
-
+import CategoryTag from '../components/CategoryTag';
 
 
 const PostPage = () => {
@@ -73,6 +73,13 @@ const PostPage = () => {
   if (!post) {
     return <div>Post not found.</div>;
   }
+  const categoriesContainerStyle = {
+    marginTop: '1rem',
+    marginBottom: '1rem',
+    borderBottom: '1px solid #eee',
+    paddingBottom: '1rem'
+  };
+
 
   // --- FOCUS ON THIS RENDERING BLOCK ---
   // If loading is false and we have a post object, this is what gets rendered.
@@ -105,7 +112,17 @@ const PostPage = () => {
         <span>Published on {new Date(post.createdAt).toLocaleDateString()}</span>
       </div>
       
-      {/* The main content area of the post. */}
+      {/* HIGHLIGHT START */}
+      {/* 2. Add the exact same conditional rendering and mapping logic here.
+           This is the beauty of a reusable component! */}
+      {post.categories && post.categories.length > 0 && (
+        <div style={categoriesContainerStyle}>
+          {post.categories.map(category => (
+            <CategoryTag key={category} category={category} />
+          ))}
+        </div>
+      )}
+      {/* HIGHLIGHT END */}
       <div className="post-full-content">
         {/*
           The ReactMarkdown component is used here.
