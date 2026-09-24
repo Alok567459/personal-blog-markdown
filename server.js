@@ -40,6 +40,9 @@ app.use(cors());
 app.use(express.json());
 
 
+
+  
+
 // MODIFIED: 4. Define the port the server will listen on
 // We now read the port from the process.env object, which was populated by dotenv.
 // It's a best practice to provide a fallback (or default) value using the OR (||) operator.
