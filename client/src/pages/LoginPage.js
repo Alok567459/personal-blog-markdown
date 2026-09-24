@@ -7,7 +7,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 // HIGHLIGHT END
 import './LoginPage.css';
-
+import apiService from "../services/apiService";
 const LoginPage = () => {
   // HIGHLIGHT START
   // 2. Call the useNavigate hook at the top level of the component to get the navigate function.
@@ -25,7 +25,7 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5001/api/auth/login', {
+      const response = await apiService.post("/auth/login", {
         username,
         password,
       });
