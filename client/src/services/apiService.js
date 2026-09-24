@@ -4,13 +4,22 @@ import axios from 'axios';
 
 // 1. Create a new Axios instance with a custom configuration.
 // We are not modifying the global axios instance. This is a best practice.
+// HIGHLIGHT START
+// 2. Create the Axios instance with a dynamic baseURL.
+//    - When you run `npm start` locally, `process.env.REACT_APP_API_URL` will be read
+//      from your `client/.env` file and will be 'http://localhost:5000/api'.
+//    - When Vercel runs `npm run build`, it will inject the environment variable you set
+//      in the Vercel dashboard, making it 'https://your-backend-name.onrender.com/api'.
 const apiService = axios.create({
-  // 2. Set a base URL for all requests.
-  // This means that for any request made with this instance,
-  // 'http://localhost:5000/api' will be prepended to the URL.
-  // For example, apiService.get('/posts') will make a GET request to 'http://localhost:5000/api/posts'.
-  baseURL: 'http://localhost:5001/api',
+  baseURL: process.env.REACT_APP_API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+    // 3. Conditionally add the Authorization header if a token exists.
+    ...(token && { Authorization: `Bearer ${token}` }),
+  },
 });
+// HIGHLIGHT END
+
 
 // 3. Set up a request interceptor.
 // This function will be called for EVERY request made using this 'apiService' instance.
