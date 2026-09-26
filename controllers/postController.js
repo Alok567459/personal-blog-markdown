@@ -55,34 +55,24 @@ const createPost = async (req, res) => {
  */
 const getAllPosts = async (req, res) => {
   try {
-    // 1. Get page and limit from query parameters, with default values.
-    // We use parseInt to convert the string from the query into a number.
-    // The || operator provides a default value if one isn't specified in the URL.
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10; // Default to 10 posts per page.
+    const isAll = req.query.limit === 'all';
+    const limit = isAll ? 0 : (parseInt(req.query.limit) || 10);
 
-    // 2. Calculate the number of documents to skip.
-    // This is the core formula for pagination.
-    const skip = (page - 1) * limit;
-
-    // 3. Get the total number of posts in the collection.
-    // We need this to calculate the total number of pages.
-    // .countDocuments() is much more efficient than fetching all documents and getting the length.
     const totalPosts = await Post.countDocuments();
 
-    // 4. Fetch the posts for the current page.
-    // We chain multiple Mongoose methods together to build our final query.
-    const posts = await Post.find()
-      .sort({ createdAt: -1 }) // Sort by creation date, newest first.
-      .skip(skip)               // Skip the documents for previous pages.
-      .limit(limit);            // Limit the results to the number per page.
+    let query = Post.find().sort({ createdAt: -1 });
+    if (!isAll && limit > 0) {
+      const skip = (page - 1) * limit;
+      query = query.skip(skip).limit(limit);
+    }
 
-    // 5. Send a structured response with pagination metadata.
-    // The frontend will need this information to build pagination controls.
+    const posts = await query;
+
     res.status(200).json({
       posts,
       currentPage: page,
-      totalPages: Math.ceil(totalPosts / limit), // Calculate total pages.
+      totalPages: isAll || limit === 0 ? 1 : Math.ceil(totalPosts / limit),
       totalPosts,
     });
 
