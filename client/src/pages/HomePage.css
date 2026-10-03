@@ -14,6 +14,10 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
+.post-list-item h2 {
+  color: #333;
+}
+
 .post-list-item h2 a {
   text-decoration: none;
   color: #333;
@@ -66,4 +70,36 @@
   border-color: #cce5ff;
   color: #6c757d;
   cursor: not-allowed;
+}
+
+/* --- Dark Mode Text Visibility & Theme Support --- */
+html.dark .post-list-item,
+.dark .post-list-item {
+  background-color: var(--bg-surface, #141c2e);
+  border: 1px solid var(--border-color, #243048);
+}
+
+html.dark .post-list-item h2,
+.dark .post-list-item h2,
+html.dark .post-list-item h2 a,
+.dark .post-list-item h2 a {
+  color: var(--text-primary, #f8fafc) !important;
+}
+
+html.dark .post-list-item:hover h2,
+.dark .post-list-item:hover h2,
+html.dark .post-list-item h2 a:hover,
+.dark .post-list-item h2 a:hover {
+  color: var(--accent-primary, #818cf8) !important;
+}
+
+html.dark .pagination-controls,
+.dark .pagination-controls {
+  background-color: var(--bg-surface, #141c2e);
+  border: 1px solid var(--border-color, #243048);
+}
+
+html.dark .pagination-controls .page-info,
+.dark .pagination-controls .page-info {
+  color: var(--text-secondary, #cbd5e1);
 }

@@ -120,3 +120,48 @@
   background-color: #218838;
 }
 /* HIGHLIGHT END */
+
+/* --- Dark Mode Text Visibility & Theme Support --- */
+html.dark .admin-dashboard,
+.dark .admin-dashboard {
+  background-color: var(--bg-surface, #141c2e);
+  border: 1px solid var(--border-color, #243048);
+}
+
+html.dark .dashboard-header,
+.dark .dashboard-header {
+  border-bottom: 1px solid var(--border-color, #243048);
+}
+
+html.dark .dashboard-header h2,
+.dark .dashboard-header h2 {
+  color: var(--text-primary, #f8fafc) !important;
+}
+
+html.dark .posts-table th,
+.dark .posts-table th {
+  background-color: var(--bg-subtle, #1c263c);
+  color: var(--text-secondary, #cbd5e1);
+  border-bottom: 1px solid var(--border-color, #243048);
+}
+
+html.dark .posts-table td,
+.dark .posts-table td {
+  color: var(--text-primary, #f8fafc) !important;
+  border-bottom: 1px solid var(--border-color, #243048);
+}
+
+html.dark .posts-table tbody tr:nth-of-type(even),
+.dark .posts-table tbody tr:nth-of-type(even) {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+html.dark .posts-table tbody tr:hover,
+.dark .posts-table tbody tr:hover {
+  background-color: var(--bg-surface-hover, #1c263c);
+}
+
+html.dark .loading-message,
+.dark .loading-message {
+  color: var(--text-muted, #94a3b8);
+}
