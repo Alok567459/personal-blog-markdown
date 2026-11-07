@@ -25,13 +25,14 @@ const createPost = async (req, res) => {
     }
 
     // 3. Use the Mongoose `create` method on our Post model.
-    // We store authorId (the logged-in user's _id) and use their username as the author name.
+    // We store authorId and user (the logged-in user's _id) and use their username as the author name.
     const newPost = await Post.create({
       title,
       markdownContent,
       categories,
       author: req.user.username,   // Use the logged-in user's username
       authorId: req.user._id,      // Store the user's ObjectId for ownership checks
+      user: req.user._id,          // Store post.user for expected authorization checks
     });
 
     // 4. Send a success response.
@@ -193,8 +194,16 @@ const updatePost = async (req, res) => {
       return res.status(404).json({ message: 'Post not found' });
     }
 
-    // Ownership check: admin can edit any post; regular user can only edit their own
-    if (req.user.role !== 'admin' && String(post.authorId) !== String(req.user._id)) {
+    // Authorization check:
+    // If user.id === post.user -> allow
+    // Else if user.role === "admin" -> allow
+    // Otherwise -> return 403 Forbidden
+    const currentUserId = String(req.user._id || req.user.id);
+    const postUserId = post.user ? String(post.user) : (post.authorId ? String(post.authorId) : null);
+    const isOwner = postUserId && (currentUserId === postUserId);
+    const isAdmin = req.user && req.user.role === 'admin';
+
+    if (!isOwner && !isAdmin) {
       return res.status(403).json({ message: 'You are not authorized to edit this post.' });
     }
 
@@ -257,8 +266,16 @@ const deletePost = async (req, res) => {
       return res.status(404).json({ message: 'Post not found' });
     }
 
-    // Ownership check: admin can delete any post; regular user can only delete their own
-    if (req.user.role !== 'admin' && String(post.authorId) !== String(req.user._id)) {
+    // Authorization check:
+    // If user.id === post.user -> allow
+    // Else if user.role === "admin" -> allow
+    // Otherwise -> return 403 Forbidden
+    const currentUserId = String(req.user._id || req.user.id);
+    const postUserId = post.user ? String(post.user) : (post.authorId ? String(post.authorId) : null);
+    const isOwner = postUserId && (currentUserId === postUserId);
+    const isAdmin = req.user && req.user.role === 'admin';
+
+    if (!isOwner && !isAdmin) {
       return res.status(403).json({ message: 'You are not authorized to delete this post.' });
     }
 
@@ -287,7 +304,9 @@ const deletePost = async (req, res) => {
  */
 const getMyPosts = async (req, res) => {
   try {
-    const posts = await Post.find({ authorId: req.user._id }).sort({ createdAt: -1 });
+    const posts = await Post.find({
+      $or: [{ authorId: req.user._id }, { user: req.user._id }],
+    }).sort({ createdAt: -1 });
     res.status(200).json({ posts });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching your posts', error: error.message });

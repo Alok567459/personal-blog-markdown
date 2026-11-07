@@ -33,16 +33,24 @@ const seedAdmin = async () => {
     const existingAdmin = await User.findOne({ username: ADMIN_USERNAME });
 
     if (existingAdmin) {
-      console.log('Admin user already exists. No action taken.');
+      console.log('Admin user already exists.');
+      if (existingAdmin.role !== 'admin') {
+        existingAdmin.role = 'admin';
+        await existingAdmin.save();
+        console.log(`Updated role of existing user '${ADMIN_USERNAME}' to 'admin'.`);
+      } else {
+        console.log(`User '${ADMIN_USERNAME}' already has 'admin' role. No action needed.`);
+      }
       return; // Exit the function if the admin is already there.
     }
 
     // 7. CREATE AND SAVE THE NEW ADMIN USER
-    // If the admin user doesn't exist, we create a new one.
+    // If the admin user doesn't exist, we create a new one with 'admin' role.
     console.log('Admin user not found. Creating a new one...');
     const adminUser = new User({
       username: ADMIN_USERNAME,
       password: ADMIN_PASSWORD, // We provide the plain-text password here.
+      role: 'admin',
     });
 
     // When we call .save(), our pre-save middleware in userModel.js will automatically

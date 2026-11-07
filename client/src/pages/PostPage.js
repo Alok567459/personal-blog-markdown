@@ -1,7 +1,7 @@
 // client/src/pages/PostPage.js
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 
 import { Helmet } from 'react-helmet-async';
 // HIGHLIGHT START
@@ -17,10 +17,57 @@ import CategoryTag from '../components/CategoryTag';
 
 const PostPage = () => {
   const { slug } = useParams();
-  
+  const navigate = useNavigate();
+
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Authentication & authorization details
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role');
+  let userId = localStorage.getItem('userId');
+  let username = localStorage.getItem('username');
+
+  // Fallback: extract user id from token payload if not directly in localStorage
+  if (token && (!userId || !role)) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (!userId && payload.id) userId = payload.id;
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  // Authorization check for post management:
+  // Admin can edit/delete ANY post.
+  // Normal user can only edit/delete their OWN post.
+  const isOwner = Boolean(
+    post &&
+    ((userId && (String(post.authorId) === String(userId) || String(post.user) === String(userId))) ||
+     (username && post.author === username))
+  );
+  const isAdmin = Boolean(token && role === 'admin');
+  const canManagePost = isAdmin || isOwner;
+
+  const handleDelete = async () => {
+    const isConfirmed = window.confirm('Are you sure you want to delete this post? This action cannot be undone.');
+    if (!isConfirmed) return;
+
+    try {
+      await apiService.delete(`/posts/${post._id}`);
+      alert('Post deleted successfully!');
+      if (isAdmin) {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      console.error('Failed to delete post:', err);
+      const msg = err.response?.data?.message || 'Failed to delete the post. Please try again.';
+      alert(msg);
+    }
+  };
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -76,7 +123,7 @@ const PostPage = () => {
   const categoriesContainerStyle = {
     marginTop: '1rem',
     marginBottom: '1rem',
-    borderBottom: '1px solid #eee',
+    borderBottom: '1px solid var(--border-color, #eee)',
     paddingBottom: '1rem'
   };
 
@@ -111,6 +158,44 @@ const PostPage = () => {
         */}
         <span>Published on {new Date(post.createdAt).toLocaleDateString()}</span>
       </div>
+
+      {/* Role-based action controls: Admin sees on all posts; author sees on own posts */}
+      {canManagePost && (
+        <div className="post-actions" style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem', marginBottom: '1rem' }}>
+          <Link
+            to={isAdmin ? `/admin/edit-post/${post._id}` : `/edit-post/${post._id}`}
+            className="btn edit-btn"
+            style={{
+              padding: '0.45rem 1rem',
+              backgroundColor: '#007bff',
+              color: '#ffffff',
+              borderRadius: '4px',
+              textDecoration: 'none',
+              fontWeight: '500',
+              fontSize: '0.9rem',
+              display: 'inline-block',
+            }}
+          >
+            Edit Post
+          </Link>
+          <button
+            onClick={handleDelete}
+            className="btn delete-btn"
+            style={{
+              padding: '0.45rem 1rem',
+              backgroundColor: '#dc3545',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: '500',
+              fontSize: '0.9rem',
+            }}
+          >
+            Delete Post
+          </button>
+        </div>
+      )}
       
       {/* HIGHLIGHT START */}
       {/* 2. Add the exact same conditional rendering and mapping logic here.

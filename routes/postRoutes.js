@@ -30,6 +30,7 @@ router.post('/', protect, postController.createPost);
 
 // PUT (update) an existing post by ID (admin can edit any post, user edits own)
 router.put('/:id', protect, postController.updatePost);
+router.patch('/:id', protect, postController.updatePost);
 
 // DELETE a post by ID (admin can delete any post, user deletes own)
 router.delete('/:id', protect, postController.deletePost);

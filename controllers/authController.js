@@ -39,7 +39,10 @@ exports.login = async (req, res) => {
     }
 
     // 7. If credentials are correct, create and sign a JWT
-    const payload = { id: user._id }; // The payload contains the user's unique ID.
+    const payload = {
+      id: user._id,
+      role: user.role,
+    };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRES_IN,
@@ -50,6 +53,11 @@ exports.login = async (req, res) => {
       status: 'success',
       token,
       role: user.role,
+      user: {
+        id: user._id,
+        username: user.username,
+        role: user.role,
+      },
     });
 
   } catch (error) {
@@ -107,7 +115,10 @@ exports.signup = async (req, res) => {
     });
 
     // Issue a JWT so the user is immediately logged in
-    const payload = { id: newUser._id };
+    const payload = {
+      id: newUser._id,
+      role: newUser.role,
+    };
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRES_IN,
     });
@@ -116,6 +127,11 @@ exports.signup = async (req, res) => {
       status: 'success',
       token,
       role: newUser.role,
+      user: {
+        id: newUser._id,
+        username: newUser.username,
+        role: newUser.role,
+      },
     });
 
   } catch (error) {

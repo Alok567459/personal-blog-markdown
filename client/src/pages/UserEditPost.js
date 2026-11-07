@@ -22,6 +22,24 @@ const UserEditPost = () => {
       setLoading(true);
       try {
         const response = await apiService.get(`/posts/${id}`);
+
+        // Authorization check: prevent unauthorized users from editing
+        const role = localStorage.getItem('role');
+        const token = localStorage.getItem('token');
+        let currentUserId = localStorage.getItem('userId');
+        if (token && !currentUserId) {
+          try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            if (payload.id) currentUserId = payload.id;
+          } catch (e) {}
+        }
+        const postOwnerId = response.data.user || response.data.authorId;
+        if (role !== 'admin' && currentUserId && postOwnerId && String(postOwnerId) !== String(currentUserId)) {
+          setError('You are not authorized to edit this post.');
+          setLoading(false);
+          return;
+        }
+
         setTitle(response.data.title);
         setMarkdownContent(response.data.markdownContent);
         if (response.data.categories && Array.isArray(response.data.categories)) {
@@ -113,7 +131,7 @@ const UserEditPost = () => {
           />
         </div>
         {error && <p className="error-message">{error}</p>}
-        <button type="submit" className="submit-btn" disabled={submitting}>
+        <button type="submit" className="submit-btn" disabled={submitting || error === 'You are not authorized to edit this post.'}>
           {submitting ? 'Updating...' : 'Update Post'}
         </button>
       </form>

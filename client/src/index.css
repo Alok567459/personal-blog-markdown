@@ -435,6 +435,7 @@ pre {
 }
 
 .post-full-content p {
+  color: var(--text-primary);
   margin: 0 0 1.5rem 0;
 }
 

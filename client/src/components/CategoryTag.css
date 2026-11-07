@@ -1,10 +1,10 @@
 /* client/src/components/CategoryTag.css */
 
 .category-tag {
-  /* ... your existing styles ... */
   display: inline-block;
-  background-color: #e9ecef;
-  color: #495057;
+  background-color: var(--bg-subtle, #f1f5f9);
+  color: var(--text-secondary, #475569);
+  border: 1px solid var(--border-color, #e2e8f0);
   padding: 4px 10px;
   border-radius: 12px;
   font-size: 0.8rem;
@@ -15,11 +15,24 @@
   transition: all 0.2s ease-in-out;
 }
 
-/* HIGHLIGHT START */
-/* Add a hover effect to indicate the tag is clickable. */
 .category-tag:hover {
-  background-color: #007bff;
-  color: #fff;
+  background-color: var(--accent-primary, #4f46e5);
+  color: #ffffff;
+  border-color: var(--accent-primary, #4f46e5);
   cursor: pointer;
+  transform: translateY(-1px);
 }
-/* HIGHLIGHT END */
+
+html.dark .category-tag,
+.dark .category-tag {
+  background-color: var(--bg-subtle, #1c263c);
+  color: var(--text-secondary, #cbd5e1);
+  border-color: var(--border-color, #243048);
+}
+
+html.dark .category-tag:hover,
+.dark .category-tag:hover {
+  background-color: var(--accent-primary, #6366f1);
+  color: #ffffff;
+  border-color: var(--accent-primary, #6366f1);
+}
