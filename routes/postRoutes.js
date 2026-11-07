@@ -24,6 +24,10 @@ router.get('/id/:id', postController.getPostById);
 // GET a single post by slug
 router.get('/:slug', postController.getPostBySlug);
 
+// --- AI SUMMARY ROUTE ---
+// Generate or retrieve 3-5 sentence summary for a post
+router.post('/:id/summary', postController.summarizePost);
+
 // --- PROTECTED ROUTES ---
 // POST a new post
 router.post('/', protect, postController.createPost);

@@ -22,6 +22,10 @@ const PostPage = () => {
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [summary, setSummary] = useState('');
+  const [loadingSummary, setLoadingSummary] = useState(false);
+  const [summaryError, setSummaryError] = useState(null);
+  const [summaryCached, setSummaryCached] = useState(false);
 
   // Authentication & authorization details
   const token = localStorage.getItem('token');
@@ -69,6 +73,33 @@ const PostPage = () => {
     }
   };
 
+  const handleSummarize = async () => {
+    if (!post) return;
+    setLoadingSummary(true);
+    setSummaryError(null);
+
+    try {
+      const identifier = post._id || post.slug || slug;
+      const response = await apiService.post(`/posts/${identifier}/summary`);
+
+      if (response.data && response.data.summary) {
+        setSummary(response.data.summary);
+        setSummaryCached(Boolean(response.data.cached));
+      } else {
+        throw new Error('No summary was returned by the server.');
+      }
+    } catch (err) {
+      console.error('Error fetching AI summary:', err);
+      const message =
+        err.response?.data?.message ||
+        err.message ||
+        'Failed to generate summary. Please ensure your Gemini API key is configured.';
+      setSummaryError(message);
+    } finally {
+      setLoadingSummary(false);
+    }
+  };
+
   useEffect(() => {
     const fetchPost = async () => {
       if (!slug) return;
@@ -77,6 +108,13 @@ const PostPage = () => {
       try {
         const response = await apiService.get(`/posts/${slug}`);
         setPost(response.data);
+        if (response.data && response.data.summary) {
+          setSummary(response.data.summary);
+          setSummaryCached(true);
+        } else {
+          setSummary('');
+          setSummaryCached(false);
+        }
       } catch (err) {
         console.error("Error fetching post:", err);
         if (err.response && err.response.status === 404) {
@@ -208,6 +246,65 @@ const PostPage = () => {
         </div>
       )}
       {/* HIGHLIGHT END */}
+
+      {/* AI Summary Section */}
+      <section className="post-summary-section" aria-label="AI Summary Section">
+        <div className="post-summary-actions">
+          <button
+            type="button"
+            className="btn summarize-btn"
+            onClick={handleSummarize}
+            disabled={loadingSummary}
+            aria-busy={loadingSummary}
+          >
+            {loadingSummary ? (
+              <>
+                <span className="summary-spinner" aria-hidden="true"></span>
+                <span>Summarizing with AI...</span>
+              </>
+            ) : (
+              <span>✨ Summarize with AI</span>
+            )}
+          </button>
+        </div>
+
+        {/* Loading Indicator */}
+        {loadingSummary && (
+          <div className="summary-loading-card" role="status" aria-live="polite">
+            <div className="summary-loading-content">
+              <span className="summary-spinner" aria-hidden="true"></span>
+              <span>Analyzing post and generating a 3–5 sentence summary with AI...</span>
+            </div>
+          </div>
+        )}
+
+        {/* Error Feedback */}
+        {summaryError && !loadingSummary && (
+          <div className="summary-error-card" role="alert">
+            <span className="summary-error-icon">⚠️</span>
+            <div className="summary-error-text">
+              <strong>Error generating summary:</strong> {summaryError}
+            </div>
+          </div>
+        )}
+
+        {/* Generated Summary Display */}
+        {summary && !loadingSummary && (
+          <div className="post-summary-card">
+            <div className="post-summary-header">
+              <div className="post-summary-title">
+                <span className="summary-badge-icon">✨</span>
+                <h3>AI Summary</h3>
+              </div>
+              {summaryCached && (
+                <span className="summary-tag">Saved</span>
+              )}
+            </div>
+            <p className="post-summary-text">{summary}</p>
+          </div>
+        )}
+      </section>
+
       <div className="post-full-content">
         {/*
           The ReactMarkdown component is used here.

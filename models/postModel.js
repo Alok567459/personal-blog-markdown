@@ -18,6 +18,10 @@ const postSchema = new mongoose.Schema(
       type: String,
       required: [true, 'A post must have content'],
     },
+    summary: {
+      type: String,
+      default: '',
+    },
     // HIGHLIGHT START
     // 1. Add the new 'categories' field.
     categories: {

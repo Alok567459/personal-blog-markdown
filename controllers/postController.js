@@ -4,6 +4,7 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
 const Post = require('../models/postModel');
+const summaryService = require('../services/summaryService');
 
 /**
  * @desc    Create a new blog post
@@ -313,6 +314,67 @@ const getMyPosts = async (req, res) => {
   }
 };
 
+/**
+ * @desc    Generate or retrieve an AI-powered 3-5 sentence summary for a post
+ * @route   POST /api/posts/:id/summary
+ * @access  Public
+ */
+const summarizePost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    let post = null;
+
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      post = await Post.findById(id);
+    }
+    if (!post) {
+      post = await Post.findOne({ slug: id });
+    }
+
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    // Reuse existing summary if already generated and saved in MongoDB
+    const force = req.query.force === 'true' || req.body?.force === true;
+    if (!force && post.summary && typeof post.summary === 'string' && post.summary.trim() !== '') {
+      return res.status(200).json({
+        success: true,
+        summary: post.summary,
+        cached: true,
+        message: 'Summary retrieved from database',
+      });
+    }
+
+    if (!post.markdownContent || typeof post.markdownContent !== 'string' || post.markdownContent.trim() === '') {
+      return res.status(400).json({
+        message: 'Cannot generate summary: post does not contain any content.',
+      });
+    }
+
+    // Generate 3-5 sentence summary using Gemini API via summaryService
+    const summary = await summaryService.generateSummary(post.markdownContent);
+
+    // Save generated summary in MongoDB
+    post.summary = summary;
+    await post.save();
+
+    return res.status(200).json({
+      success: true,
+      summary: post.summary,
+      cached: false,
+      message: 'Summary generated and saved successfully',
+    });
+  } catch (error) {
+    console.error('Error in summarizePost controller:', error);
+    const statusCode = error.status || error.statusCode || 500;
+    return res.status(statusCode).json({
+      message: error.message || 'Failed to generate post summary',
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createPost,
   getAllPosts,
@@ -322,4 +384,5 @@ module.exports = {
   getMyPosts,
   updatePost,
   deletePost,
+  summarizePost,
 };
